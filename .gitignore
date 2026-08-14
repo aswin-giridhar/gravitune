@@ -1,5 +1,17 @@
+# --- secrets: never commit. This repo is public. ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- python ---
 __pycache__/
 *.pyc
+
+# --- large model weights ---
 *.gguf
+
 # NOTE: results/*.json is deliberately NOT ignored -- the sweep JSON and tuned
 # configs are the published evidence, not transient build output.
