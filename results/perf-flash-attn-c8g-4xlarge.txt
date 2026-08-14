@@ -1,0 +1,23 @@
+# perf evidence: flash-attn on vs off, AWS c8g.4xlarge (Graviton4, Neoverse-V2)
+# workload: llama-bench -m qwen2.5-1.5b-instruct-q4_0.gguf -t 16 -p 512 -n 0 -r 1
+
+## perf stat
+fa=on    95608334834 cycles   389683137185 instructions   4.08 insn per cycle
+fa=off   56700776193 cycles   197945396973 instructions   3.49 insn per cycle
+# -> fa=on executes 1.97x MORE instructions for identical work.
+# -> fa=on has HIGHER IPC yet HALF the throughput: IPC measures execution
+#    efficiency, not whether the instructions needed to exist.
+
+## perf report --no-children --percent-limit 2  (top self-time symbols)
+
+### fa=on
+54.18%  llama-bench  libggml-cpu.so.0.20.0  [.] ggml_compute_forward_flash_attn_ext_tiled
+38.95%  llama-bench  libggml-cpu.so.0.20.0  [.] ggml_gemm_q4_0_4x8_q8_0
+
+### fa=off
+65.40%  llama-bench  libggml-cpu.so.0.20.0  [.] ggml_gemm_q4_0_4x8_q8_0
+16.49%  llama-bench  libggml-cpu.so.0.20.0  [.] ggml_vec_dot_f16
+ 2.09%  llama-bench  libggml-cpu.so.0.20.0  [.] ggml_compute_forward_soft_max
+
+# ggml_gemm_q4_0_4x8_q8_0 is the repacked Q4_0 4x8 int8-matmul kernel:
+# confirmation that the i8mm-accelerated path is engaged on this target.

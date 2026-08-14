@@ -1,0 +1,49 @@
+{
+  "schema": "gravitune/tuned-config/v1",
+  "generated_utc": "2026-08-14T17:07:52+00:00",
+  "target": {
+    "cpu_part": "Neoverse-V2",
+    "midr": "0xd4f",
+    "cores": 16,
+    "features": [
+      "asimd",
+      "asimddp",
+      "i8mm",
+      "bf16",
+      "sve",
+      "sve2",
+      "svei8mm",
+      "svebf16"
+    ],
+    "instance_type": "c8g.4xlarge",
+    "kernel": "6.17.0-1019-aws"
+  },
+  "objective": {
+    "name": "interactive",
+    "description": "Chat / assistant workloads. Weights decode throughput heavily, since that is the streaming speed a user perceives, with a modest pull toward low TTFT so responses start promptly."
+  },
+  "recommended": {
+    "threads": 16,
+    "batch": 2048,
+    "ubatch": 512,
+    "flash_attn": "off",
+    "model": "qwen2.5-1.5b-instruct-q4_0.gguf"
+  },
+  "measured": {
+    "prefill_tps": 854.23,
+    "decode_tps": 136.4,
+    "ttft_ms": 599.4
+  },
+  "llama_cli_args": "-t 16 -b 2048 -ub 512 -fa off",
+  "baseline": {
+    "threads": 16,
+    "prefill_tps": 430.37,
+    "decode_tps": 127.53,
+    "ttft_ms": 1189.7
+  },
+  "improvement": {
+    "prefill_x": 1.985,
+    "decode_x": 1.07,
+    "ttft_x": 1.985
+  }
+}
