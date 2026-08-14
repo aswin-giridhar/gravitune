@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -15,6 +16,12 @@ from .score import DEFAULT_OBJECTIVE, OBJECTIVES, baseline, best
 from .sweep import SweepRunner, build_grid, detect_target
 
 import json
+
+
+def _safe_tag(s: str, limit: int = 40) -> str:
+    """Reduce a target-derived string to something safe in a filename."""
+    cleaned = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+    return cleaned[:limit] or "unknown"
 
 
 def cmd_detect(args: argparse.Namespace) -> int:
@@ -83,9 +90,11 @@ def cmd_tune(args: argparse.Namespace) -> int:
     base = baseline(measurements, target.cores)
     cfg_doc = tuned_config(target, top, base, objective)
 
-    tag = target.cpu_part.lower()
+    # Defence in depth: even with validated inputs, never let target-derived
+    # strings reach the filesystem unsanitised.
+    tag = _safe_tag(target.cpu_part)
     if target.instance_type:
-        tag += f"_{target.instance_type.replace('.', '-')}"
+        tag += f"_{_safe_tag(target.instance_type)}"
     (outdir / f"tuned-{tag}.json").write_text(json.dumps(cfg_doc, indent=2))
     (outdir / f"report-{tag}.md").write_text(
         markdown_report(target, measurements, objective))

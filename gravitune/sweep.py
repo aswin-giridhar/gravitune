@@ -84,26 +84,50 @@ def detect_target() -> Target:
         present = set(m.group(1).split())
         t.features = [f for f in _FEATURES_OF_INTEREST if f in present]
 
-    # Cloud instance type, when we happen to be on a cloud box. Best-effort:
-    # absence is normal (bare metal), not an error.
+    t.instance_type = _detect_instance_type()
+    return t
+
+
+# An EC2 instance type looks like "c8g.4xlarge" / "m7g.metal". Anything else --
+# an HTML error page, a proxy banner, an empty string -- is not one.
+_INSTANCE_TYPE_RE = re.compile(r"^[a-z][a-z0-9]{0,7}\.[a-z0-9]{1,12}$")
+
+
+def _detect_instance_type() -> str:
+    """Best-effort cloud instance type. Returns "" when we are not on EC2.
+
+    The link-local address 169.254.169.254 is not EC2-exclusive: other
+    environments (GitHub's Arm runners among them) answer it with an HTTP 400
+    HTML error page. curl exits 0 in that case, so an exception handler alone
+    does not protect us -- we have to validate the *content*. Without this,
+    an HTML error page once ended up interpolated into an output filename.
+
+    Absence is a normal answer here (bare metal, a laptop, a Pi), so it returns
+    "" rather than raising. But it must never return garbage dressed as data.
+    """
     try:
         tok = subprocess.run(
-            ["curl", "-sS", "-m", "1", "-X", "PUT",
+            ["curl", "-sS", "-m", "1", "-f", "-X", "PUT",
              "http://169.254.169.254/latest/api/token",
              "-H", "X-aws-ec2-metadata-token-ttl-seconds: 60"],
             capture_output=True, text=True, timeout=3,
-        ).stdout.strip()
-        if tok:
-            t.instance_type = subprocess.run(
-                ["curl", "-sS", "-m", "1",
-                 "http://169.254.169.254/latest/meta-data/instance-type",
-                 "-H", f"X-aws-ec2-metadata-token: {tok}"],
-                capture_output=True, text=True, timeout=3,
-            ).stdout.strip()
-    except Exception:
-        pass
+        )
+        if tok.returncode != 0 or not tok.stdout.strip():
+            return ""
 
-    return t
+        res = subprocess.run(
+            ["curl", "-sS", "-m", "1", "-f",
+             "http://169.254.169.254/latest/meta-data/instance-type",
+             "-H", f"X-aws-ec2-metadata-token: {tok.stdout.strip()}"],
+            capture_output=True, text=True, timeout=3,
+        )
+        if res.returncode != 0:
+            return ""
+
+        candidate = res.stdout.strip()
+        return candidate if _INSTANCE_TYPE_RE.match(candidate) else ""
+    except Exception:
+        return ""
 
 
 # --------------------------------------------------------------------------

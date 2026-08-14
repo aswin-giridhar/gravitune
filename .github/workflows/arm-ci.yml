@@ -29,6 +29,9 @@ jobs:
       - name: gravitune detect
         run: python3 -m gravitune detect
 
+      - name: Regression tests
+        run: python3 tests/test_detect.py
+
   mcp:
     name: MCP server contract
     runs-on: ubuntu-24.04-arm
