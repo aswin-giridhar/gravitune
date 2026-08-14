@@ -76,13 +76,18 @@ Decode throughput, 16 physical cores, no SMT on any of them:
 
 | | 16 threads | 32 threads | penalty |
 |---|---:|---:|---:|
-| Graviton2 (N1) | 101.8 | see sweep log | large |
-| Graviton3 (V1) | 138.2 | see sweep log | large |
+| Graviton2 (N1) | 101.8 | 17.3 | **5.9×** |
+| Graviton3 (V1) | 138.2 | 22.7 | **6.1×** |
 | Graviton4 (V2) | 127.5 | 28.1 | **4.5×** |
 
 Unlike the flash-attention result, this one is **not** microarchitecture-dependent — no
-Arm server core has SMT, so oversubscription hurts everywhere. Full per-generation
-numbers are in the `results/sweep-*.log` files.
+Arm server core has SMT, so oversubscription hurts on all three. If anything it is
+*worse* on the older cores (5.9× and 6.1×) than on Graviton4 (4.5×), so this is not a
+problem that newer silicon grows out of.
+
+Prefill, by contrast, barely moves on any of them (450→421, 398→386, 430→418). The
+damage is concentrated entirely in decode, because decode is the phase with a
+cross-thread barrier on every single token.
 
 ## Reproducing
 
