@@ -87,13 +87,12 @@ harmless. That reflex carried onto Arm is a 4.5× penalty on the metric users fe
 from 1.97x at 512 tokens to **5.20x at 8192**
 ([data](docs/context-length-and-x86.md)).
 
-### Fixed upstream
+### Reported upstream
 
 Reported as [ggml-org/llama.cpp#27086](https://github.com/ggml-org/llama.cpp/issues/27086)
-with the instruction-count evidence, and **fixed in [PR #27092](https://github.com/ggml-org/llama.cpp/pull/27092)** — 28 lines making
+with the instruction-count evidence, with the accompanying fix — 28 lines making
 `-fa auto` resolve to *off* on Arm cores with i8mm+SVE, compiled and behaviourally verified
-on a real Graviton4. The patch is also in [`patches/`](patches/) if you want to apply it
-locally.
+on a real Graviton4 and included in [`patches/`](patches/) so you can apply it locally.
 
 ---
 
