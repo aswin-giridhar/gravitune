@@ -1,0 +1,26 @@
+Target : Neoverse-V2, 16 cores (c8g.4xlarge)
+ISA    : asimd asimddp i8mm bf16 sve sve2 svei8mm svebf16
+Grid   : 13 configs | objective: interactive
+
+[1/13] t1_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=40.9 decode=18.3 ttft=12532ms [ok] (53s)
+[2/13] t2_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=75.9 decode=34.3 ttft=6744ms [ok] (29s)
+[3/13] t4_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=152.9 decode=62.5 ttft=3348ms [ok] (15s)
+[4/13] t8_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=282.1 decode=101.4 ttft=1815ms [ok] (9s)
+[5/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=430.4 decode=127.5 ttft=1190ms [ok] (7s)
+[6/13] t32_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=417.5 decode=28.1 ttft=1226ms [ok] (14s)
+[7/13] t16_b2048_ub128_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=250.4 decode=149.8 ttft=2045ms [ok] (9s)
+[8/13] t16_b2048_ub256_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=413.0 decode=149.5 ttft=1240ms [ok] (6s)
+[9/13] t16_b2048_ub1024_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=429.9 decode=151.2 ttft=1191ms [ok] (6s)
+[10/13] t16_b2048_ub512_faon_qwen2.5-1.5b-instruct-q4_0: prefill=430.6 decode=150.0 ttft=1189ms [ok] (6s)
+[11/13] t16_b2048_ub512_faoff_qwen2.5-1.5b-instruct-q4_0: prefill=854.2 decode=136.4 ttft=599ms [ok] (5s)
+[12/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_k_m: prefill=316.2 decode=133.3 ttft=1619ms [ok] (8s)
+[13/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q8_0: prefill=395.2 decode=120.9 ttft=1295ms [ok] (7s)
+
+====================================================================
+BEST (interactive): t16_b2048_ub512_faoff_qwen2.5-1.5b-instruct-q4_0
+  prefill 854.2 tok/s | decode 136.4 tok/s | TTFT 599 ms
+  vs stock all-core default: 1.07x decode
+  run with: -t 16 -b 2048 -ub 512 -fa off
+====================================================================
+
+Wrote /home/ubuntu/gravitune-repo/results/tuned-neoverse-v2_c8g-4xlarge.json, report-neoverse-v2_c8g-4xlarge.md, sweep.json

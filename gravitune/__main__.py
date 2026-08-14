@@ -56,11 +56,14 @@ def cmd_tune(args: argparse.Namespace) -> int:
     objective = OBJECTIVES[args.objective]
     grid = build_grid(models, target.cores, quick=args.quick)
 
+    # flush=True throughout: a sweep is long-running and usually redirected to a
+    # log file, where Python's block buffering would otherwise show nothing at
+    # all until the first config finishes. An empty log reads as "it crashed".
     print(f"Target : {target.cpu_part}, {target.cores} cores "
-          f"({target.instance_type or 'local'})")
-    print(f"ISA    : {' '.join(target.features)}")
-    print(f"Grid   : {len(grid)} configs | objective: {objective.name}")
-    print()
+          f"({target.instance_type or 'local'})", flush=True)
+    print(f"ISA    : {' '.join(target.features)}", flush=True)
+    print(f"Grid   : {len(grid)} configs | objective: {objective.name}", flush=True)
+    print(flush=True)
 
     runner = SweepRunner(str(bench), prompt_tokens=args.prompt_tokens,
                          gen_tokens=args.gen_tokens, reps=args.reps)
