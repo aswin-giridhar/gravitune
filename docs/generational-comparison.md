@@ -28,6 +28,8 @@ Prefill throughput, 16 threads, Q4_0:
 | Graviton3 (V1) | 397.9 | 615.4 | **1.55×** |
 | Graviton4 (V2) | 430.4 | 854.2 | **1.99×** |
 
+<img src="img/flash-attn-generations.svg" alt="Prefill throughput across Graviton generations" width="100%">
+
 The split follows the **core family, not the generation number**:
 
 - **Neoverse V-series (V1, V2)** are wide performance cores with large private L2 and a

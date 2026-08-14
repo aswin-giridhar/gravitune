@@ -51,6 +51,8 @@ never the bottleneck here — you pay the extra arithmetic and get nothing back.
 
 **But not on every Arm core** — and that is the point of measuring:
 
+<img src="docs/img/flash-attn-generations.svg" alt="Prefill throughput with flash attention default vs disabled, across Graviton 2/3/4" width="100%">
+
 | prefill, 16t, Q4_0 | `-fa auto` | `-fa off` | ratio |
 |---|---:|---:|---:|
 | Graviton4 `c8g` (Neoverse-V2) | 430.4 | 854.2 | **1.99x** |
