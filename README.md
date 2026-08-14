@@ -179,12 +179,28 @@ The objective is therefore explicit and swappable (`gravitune/score.py`):
 
 | objective | for | ranks by |
 |---|---|---|
-| `interactive` (default) | chat, assistants | decode throughput, with a pull toward low TTFT |
+| `interactive` (default) | chat, assistants | max decode **subject to an 800 ms TTFT budget** |
 | `batch` | bulk summarisation, embeddings, evals | prefill throughput |
 | `balanced` | mixed serving | harmonic mean, so neither phase can be sacrificed |
+| `cost` | infrastructure owners | decode tokens per dollar (`--price-per-hour` required) |
 
 Add your own by appending an `Objective` — there is a marked `TODO(user)` block in
-`score.py` with worked suggestions (tokens-per-dollar, p99 TTFT, tokens-per-watt).
+`score.py` with worked suggestions (p99 TTFT, tokens-per-watt).
+
+### Is your objective measuring anything?
+
+`interactive` originally blended decode and TTFT with a weight of `0.15`, chosen by feel.
+Sweeping that weight over the real data showed **the winning config flips at w = 0.146853**
+— 0.003 away. Since decode varies ~15% run-to-run, the "recommendation" was a coin toss,
+and nothing in the output said so. It is now a stated budget instead.
+
+Run the same check on your own scoring function:
+
+```bash
+python3 scripts/objective_sensitivity.py results/sweep.json
+```
+
+If the winner flips next to the constant you picked, your objective is decoration.
 
 ---
 
