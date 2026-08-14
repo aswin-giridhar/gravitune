@@ -83,6 +83,13 @@ their peers need.
 On x86, `nproc` reports 32 on a 16-core SMT box and habitually oversubscribing is often
 harmless. That reflex carried onto Arm is a 4.5× penalty on the metric users feel.
 
+### Reported upstream
+
+This finding is filed with llama.cpp as
+[ggml-org/llama.cpp#27086](https://github.com/ggml-org/llama.cpp/issues/27086), including the instruction-count evidence and a
+proposed MIDR-based fix: have `-fa auto` resolve to *off* on Neoverse-V1/V2 (`0xd40` /
+`0xd4f`) while leaving Neoverse-N1 unchanged.
+
 ---
 
 ## Why this matters
