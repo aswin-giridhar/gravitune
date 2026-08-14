@@ -18,12 +18,21 @@ Qwen2.5-1.5B-Instruct Q4_0, GraviTune found two things that cost real users real
 
 ### 1. llama.cpp's default flash-attention setting halves your prefill speed
 
-| config | prefill tok/s | decode tok/s | TTFT (512-tok prompt) |
-|---|---:|---:|---:|
-| `-fa auto` ← **the default** | 430.4 | 127.5 | 1190 ms |
-| `-fa off` | **854.2** | 136.4 | **599 ms** |
+| config | prefill tok/s | TTFT (512-tok prompt) |
+|---|---:|---:|
+| `-fa auto` ← **the default** | 430.4 | 1190 ms |
+| `-fa off` | **854.2** | **599 ms** |
 
 **1.99× prefill throughput. 1.99× faster time-to-first-token. From one flag.**
+
+Reproduced independently on a clean instance via `scripts/reproduce.sh`: 853.8 tok/s,
+600 ms — within 0.05%.
+
+**We deliberately do not claim a decode win.** Decode measured 127.5 tok/s and 146.8
+tok/s for the *same* baseline config across two runs — a 15% run-to-run swing, so any
+decode delta here is inside the noise floor. Prefill saturates compute and is highly
+reproducible; decode is bandwidth-bound and sensitive to memory-system state and
+neighbour activity on a shared host. **The honest result is a prefill/TTFT win.**
 
 FlashAttention is a GPU-motivated algorithm: it spends extra arithmetic to avoid
 round-trips to memory, because on a GPU the small SRAM scratchpad is the binding
@@ -247,6 +256,9 @@ Stated plainly, because a benchmark that hides its scope is not much of a benchm
 - The `-fa off` result is specific to CPU inference. Do not carry it to a GPU backend.
 - `llama-bench` reports steady-state throughput; TTFT is derived from prefill rate
   rather than measured on a cold request.
+- **Decode throughput varies ~15% run-to-run** on shared cloud instances. Treat single-run
+  decode comparisons with suspicion; prefill reproduces to <0.1%. Raise `--reps` and
+  repeat the sweep before acting on any small decode difference.
 
 ## License
 
