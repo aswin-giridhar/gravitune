@@ -83,6 +83,10 @@ their peers need.
 On x86, `nproc` reports 32 on a 16-core SMT box and habitually oversubscribing is often
 harmless. That reflex carried onto Arm is a 4.5× penalty on the metric users feel.
 
+**Longer prompts make it matter more**, not less — the advantage grows monotonically
+from 1.97x at 512 tokens to **5.20x at 8192**
+([data](docs/context-length-and-x86.md)).
+
 ### Reported upstream
 
 This finding is filed with llama.cpp as
@@ -269,7 +273,13 @@ Stated plainly, because a benchmark that hides its scope is not much of a benchm
 - Measured on one model family (Qwen2.5-1.5B-Instruct) at three quantisations. Larger
   models are more bandwidth-bound and will shift the optimal thread count.
 - Single-socket, single-NUMA-node instances. NUMA pinning is not yet swept.
-- The `-fa off` result is specific to CPU inference. Do not carry it to a GPU backend.
+- The `-fa off` result is specific to **CPU** inference. Do not carry it to a GPU backend.
+  It is also **architecture-specific**: on an Intel i7-10870H (AVX2) disabling flash
+  attention is a 4.7% *loss*, while on Neoverse-V2 it is a ~2x gain.
+- **Context length was swept 512 -> 8192 and the effect gets STRONGER, not weaker**
+  (1.97x -> 5.20x). An earlier version of this README predicted it would reverse at long
+  context; that prediction was measured and found wrong.
+  See [docs/context-length-and-x86.md](docs/context-length-and-x86.md).
 - `llama-bench` reports steady-state throughput; TTFT is derived from prefill rate
   rather than measured on a cold request.
 - **Decode throughput varies ~15% run-to-run** on shared cloud instances. Treat single-run

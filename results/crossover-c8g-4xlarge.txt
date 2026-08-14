@@ -1,0 +1,18 @@
+###CROSSOVER_1.5B
+p=512 fa=on prefill=433.15
+p=512 fa=off prefill=851.83
+p=1024 fa=on prefill=282.19
+p=1024 fa=off prefill=745.81
+p=2048 fa=on prefill=182.06
+p=2048 fa=off prefill=628.85
+p=4096 fa=on prefill=105.93
+p=4096 fa=off prefill=456.36
+p=8192 fa=on prefill=57.78
+p=8192 fa=off prefill=300.42
+
+###X86_BASELINE  Intel i7-10870H (Comet Lake, AVX2, 8 physical cores), 512-tok prefill
+p=512 fa=on  prefill=96.06
+p=512 fa=off prefill=91.63
+decode t8 = 26.90
+# NOTE: not comparable to Graviton as a throughput ratio (8 vs 16 cores, laptop
+# vs server, different ISA/power). Only the SIGN of the fa effect is comparable.

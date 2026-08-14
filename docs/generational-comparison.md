@@ -100,9 +100,9 @@ Each generation ran the identical unattended pipeline (clone, build, download, s
 
 ## Caveats
 
-- One model (1.5B) at one prompt length (512 tokens). Attention working set grows
-  quadratically with context, so the V-series flash-attention result should reverse at
-  long enough context. Finding that crossover is the obvious next experiment.
+- One model (1.5B). Prompt length was swept 512 -> 8192 and the V-series result does NOT
+  reverse; the advantage grows monotonically to 5.20x. See
+  [context-length-and-x86.md](context-length-and-x86.md).
 - 16-vCPU instances only; larger sizes have different cache-per-core and memory bandwidth.
 - Graviton2/3 sweeps ran unattended in user-data, so their `perf`-level instruction-count
   analysis was not collected — only Graviton4 has the counter-level evidence.
