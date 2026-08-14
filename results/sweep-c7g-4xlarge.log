@@ -1,0 +1,26 @@
+Target : Neoverse-V1, 16 cores (c7g.4xlarge)
+ISA    : asimd asimddp i8mm bf16 sve svei8mm svebf16
+Grid   : 13 configs | objective: interactive
+
+[1/13] t1_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=39.6 decode=16.9 ttft=12937ms [ok] (55s)
+[2/13] t2_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=73.2 decode=31.4 ttft=6994ms [ok] (30s)
+[3/13] t4_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=147.7 decode=56.4 ttft=3466ms [ok] (16s)
+[4/13] t8_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=258.4 decode=93.9 ttft=1982ms [ok] (10s)
+[5/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=397.9 decode=138.2 ttft=1287ms [ok] (7s)
+[6/13] t32_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=385.7 decode=22.7 ttft=1328ms [ok] (16s)
+[7/13] t16_b2048_ub128_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=228.5 decode=137.0 ttft=2240ms [ok] (10s)
+[8/13] t16_b2048_ub256_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=378.2 decode=136.6 ttft=1354ms [ok] (7s)
+[9/13] t16_b2048_ub1024_faauto_qwen2.5-1.5b-instruct-q4_0: prefill=397.5 decode=134.2 ttft=1288ms [ok] (7s)
+[10/13] t16_b2048_ub512_faon_qwen2.5-1.5b-instruct-q4_0: prefill=397.7 decode=135.9 ttft=1287ms [ok] (7s)
+[11/13] t16_b2048_ub512_faoff_qwen2.5-1.5b-instruct-q4_0: prefill=615.4 decode=126.8 ttft=832ms [ok] (5s)
+[12/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_k_m: prefill=288.6 decode=109.0 ttft=1774ms [ok] (9s)
+[13/13] t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q8_0: prefill=355.3 decode=97.9 ttft=1441ms [ok] (9s)
+
+====================================================================
+BEST (interactive): t16_b2048_ub512_faauto_qwen2.5-1.5b-instruct-q4_0
+  prefill 397.9 tok/s | decode 138.2 tok/s | TTFT 1287 ms
+  vs stock all-core default: 1.00x decode
+  run with: -t 16 -b 2048 -ub 512 -fa auto
+====================================================================
+
+Wrote /home/ubuntu/gravitune-repo/results/tuned-neoverse-v1_c7g-4xlarge.json, report-neoverse-v1_c7g-4xlarge.md, sweep.json

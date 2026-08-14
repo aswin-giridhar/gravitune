@@ -31,7 +31,23 @@ constraint. A Neoverse-V2 core has a large private L2 and a big shared L3/SLC, s
 attention working set already lives in cache. The memory traffic FA exists to avoid was
 never the bottleneck here — you pay the extra arithmetic and get nothing back.
 
-`-fa auto` resolves to *on*, so **the default is the slow path on Arm CPUs.**
+`-fa auto` resolves to *on*, so **the default is the slow path on Neoverse V-series cores.**
+
+**But not on every Arm core** — and that is the point of measuring:
+
+| prefill, 16t, Q4_0 | `-fa auto` | `-fa off` | ratio |
+|---|---:|---:|---:|
+| Graviton4 `c8g` (Neoverse-V2) | 430.4 | 854.2 | **1.99x** |
+| Graviton3 `c7g` (Neoverse-V1) | 397.9 | 615.4 | **1.55x** |
+| Graviton2 `c6g` (Neoverse-N1) | 450.2 | 440.9 | 0.98x - no win |
+
+The split tracks the **core family, not the generation number**. Neoverse V-series are
+wide performance cores with large caches, so FA's trade buys nothing. Neoverse-N1 is a
+narrower efficiency core with a smaller cache hierarchy, where the memory traffic FA
+avoids is real and the default is correct.
+
+If the optimal config were the same everywhere you would not need an autotuner, you
+would need a blog post. See [docs/generational-comparison.md](docs/generational-comparison.md).
 
 ### 2. Oversubscribing threads costs 4.5× on token generation
 
