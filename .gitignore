@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
 *.gguf
-results/*.json
+# NOTE: results/*.json is deliberately NOT ignored -- the sweep JSON and tuned
+# configs are the published evidence, not transient build output.

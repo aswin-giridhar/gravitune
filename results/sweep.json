@@ -1,0 +1,203 @@
+{
+  "target": {
+    "cpu_part": "Neoverse-V2",
+    "midr": "0xd4f",
+    "cores": 16,
+    "features": [
+      "asimd",
+      "asimddp",
+      "i8mm",
+      "bf16",
+      "sve",
+      "sve2",
+      "svei8mm",
+      "svebf16"
+    ],
+    "kernel": "6.17.0-1019-aws",
+    "instance_type": "c8g.4xlarge"
+  },
+  "measurements": [
+    {
+      "config": {
+        "threads": 1,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 40.854227,
+      "decode_tps": 18.255948,
+      "ttft_ms": 12532.362930278916,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 2,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 75.917684,
+      "decode_tps": 34.269818,
+      "ttft_ms": 6744.146726077683,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 4,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 152.905183,
+      "decode_tps": 62.520191,
+      "ttft_ms": 3348.480345496202,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 8,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 282.09808,
+      "decode_tps": 101.362106,
+      "ttft_ms": 1814.9715871869814,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 430.367645,
+      "decode_tps": 127.531862,
+      "ttft_ms": 1189.6805114148394,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 32,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 417.524675,
+      "decode_tps": 28.101239,
+      "ttft_ms": 1226.2748303438593,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 128,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 250.375716,
+      "decode_tps": 149.77039,
+      "ttft_ms": 2044.9267531999785,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 256,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 412.991941,
+      "decode_tps": 149.490287,
+      "ttft_ms": 1239.7336344149146,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 1024,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 429.861553,
+      "decode_tps": 151.183946,
+      "ttft_ms": 1191.0811665448014,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "on"
+      },
+      "prefill_tps": 430.643339,
+      "decode_tps": 149.985508,
+      "ttft_ms": 1188.9188886304823,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "off"
+      },
+      "prefill_tps": 854.227619,
+      "decode_tps": 136.40359,
+      "ttft_ms": 599.3718636718535,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 316.163225,
+      "decode_tps": 133.287661,
+      "ttft_ms": 1619.416679469916,
+      "ok": true,
+      "error": ""
+    },
+    {
+      "config": {
+        "threads": 16,
+        "model": "/home/ubuntu/models/qwen2.5-1.5b-instruct-q8_0.gguf",
+        "batch": 2048,
+        "ubatch": 512,
+        "flash_attn": "auto"
+      },
+      "prefill_tps": 395.217433,
+      "decode_tps": 120.945358,
+      "ttft_ms": 1295.4894122800497,
+      "ok": true,
+      "error": ""
+    }
+  ]
+}
