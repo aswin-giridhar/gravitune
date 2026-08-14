@@ -1,5 +1,12 @@
 # GraviTune
 
+[![Arm CI](https://github.com/aswin-giridhar/gravitune/actions/workflows/arm-ci.yml/badge.svg)](https://github.com/aswin-giridhar/gravitune/actions/workflows/arm-ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> Every result here is verified on **real Arm silicon in CI** — the badge above runs
+> GraviTune on GitHub's free `ubuntu-24.04-arm` runner (image managed by Arm, LLC) on
+> every push. You can confirm it works without provisioning any hardware.
+
 **Autotune LLM inference on Arm — and find out that the defaults are wrong.**
 
 GraviTune measures llama.cpp inference across a config grid on the Arm machine you

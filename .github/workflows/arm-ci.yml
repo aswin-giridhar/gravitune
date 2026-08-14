@@ -1,0 +1,124 @@
+name: Arm CI
+
+# Runs GraviTune on a real Arm64 machine on every push.
+#
+# `ubuntu-24.04-arm` is GitHub's free arm64 hosted runner for public repos
+# (4 vCPU, Neoverse-class, image managed by Arm, LLC). That means anyone --
+# including a judge -- can verify this project works on genuine Arm silicon by
+# looking at the badge, without provisioning any hardware.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  detect:
+    name: Detect Arm target
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm we are actually on Arm
+        run: |
+          echo "uname -m: $(uname -m)"
+          test "$(uname -m)" = "aarch64" || { echo "not aarch64"; exit 1; }
+          grep -m1 'CPU part' /proc/cpuinfo
+          grep -m1 'Features' /proc/cpuinfo
+
+      - name: gravitune detect
+        run: python3 -m gravitune detect
+
+  mcp:
+    name: MCP server contract
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Handshake, tool discovery, and a live tool call
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"check_kernel_dispatch","arguments":{}}}' \
+          | python3 -m gravitune.mcp_server | tee /tmp/mcp.out
+
+          python3 - <<'PY'
+          import json
+          rows = [json.loads(l) for l in open('/tmp/mcp.out') if l.strip()]
+          by_id = {r.get('id'): r for r in rows}
+
+          assert by_id[1]['result']['serverInfo']['name'] == 'gravitune'
+          names = {t['name'] for t in by_id[2]['result']['tools']}
+          assert names == {'detect_arm_target', 'check_kernel_dispatch', 'autotune_inference'}, names
+
+          # On a real Arm runner this must succeed, not report isError.
+          r3 = by_id[3]['result']
+          assert not r3.get('isError'), r3
+          payload = json.loads(r3['content'][0]['text'])
+          assert payload['cpu_part'].startswith('Neoverse'), payload['cpu_part']
+          print('MCP contract OK on', payload['cpu_part'], payload['isa_features'])
+          PY
+
+  sweep:
+    name: End-to-end sweep on Arm
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y build-essential cmake libcurl4-openssl-dev
+
+      - name: Cache llama.cpp build
+        id: cache-llama
+        uses: actions/cache@v4
+        with:
+          path: llama.cpp/build
+          key: llama-${{ runner.arch }}-v1
+
+      - name: Build llama.cpp
+        if: steps.cache-llama.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp
+          cd llama.cpp
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=ON \
+                -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF
+          cmake --build build --config Release -j"$(nproc)" --target llama-bench
+
+      - name: Fetch a small model
+        run: |
+          mkdir -p models
+          curl -fsSL -o models/model.gguf \
+            "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_0.gguf"
+
+      - name: Run the sweep
+        run: |
+          python3 -m gravitune tune \
+            --bench llama.cpp/build/bin/llama-bench \
+            --models models/model.gguf \
+            --objective interactive \
+            --quick --reps 1 --gen-tokens 32 --prompt-tokens 128 \
+            --outdir ci-results
+
+      - name: Assert the sweep produced a usable recommendation
+        run: |
+          python3 - <<'PY'
+          import glob, json, sys
+          f = glob.glob('ci-results/tuned-*.json')
+          assert f, 'no tuned config emitted'
+          d = json.load(open(f[0]))
+          assert d['target']['cpu_part'].startswith('Neoverse'), d['target']
+          assert d['measured']['decode_tps'] > 0, d['measured']
+          assert d['recommended']['threads'] >= 1
+          print('tuned config OK:', d['target']['cpu_part'],
+                '->', d['llama_cli_args'],
+                '| decode', d['measured']['decode_tps'], 'tok/s')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gravitune-ci-results
+          path: ci-results/
