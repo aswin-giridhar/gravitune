@@ -18,6 +18,8 @@ Override with `-fa on` still works.
 Uses existing public API (`ggml_cpu_has_matmul_int8()`, `ggml_cpu_has_sve()`);
 no MIDR parsing needed. Applies to CPU-only inference; GPU backends unaffected.
 
+**Submitted upstream as [PR #27092](https://github.com/ggml-org/llama.cpp/pull/27092).**
+
 Discussion and full data: https://github.com/ggml-org/llama.cpp/issues/27086
 
 ```bash
