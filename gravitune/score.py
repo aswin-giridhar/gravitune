@@ -36,14 +36,49 @@ def _safe(x: float) -> float:
 # one can be actively bad for the other -- which is exactly why picking an
 # objective has to be a deliberate choice.
 
+# Default TTFT budget in milliseconds.
+#
+# 1000 ms is the long-standing HCI threshold for keeping a user's "flow of
+# thought" uninterrupted (Nielsen, *Usability Engineering*). We set the budget
+# slightly under it so there is headroom for network and template overhead that
+# llama-bench does not measure.
+TTFT_BUDGET_MS = 800.0
+
+
+def _interactive(m: Measurement) -> float:
+    """Maximise decode throughput subject to a time-to-first-token budget.
+
+    An earlier version blended the two into a single weighted score:
+
+        decode_tps * (1 + w * 1000/ttft_ms)      with w = 0.15
+
+    That was wrong, and measurably so. Sweeping `w` over the real sweep data
+    showed the winning config flips at w = 0.1469 -- 0.003 away from the 0.15
+    that had been chosen by feel. Since decode throughput varies ~15%
+    run-to-run on shared cloud hosts, the "recommendation" was a coin toss
+    balanced on a knife edge, and nothing in the output would have revealed
+    that. `scripts/objective_sensitivity.py` reproduces the finding.
+
+    A budget is the honest formulation because it states the actual
+    requirement: a response must *start* within a tolerable delay, and after
+    that the thing users feel is streaming speed. Configs that meet the budget
+    are ranked purely on decode; configs that miss it are ranked below all of
+    them, ordered by how close they came. There is no hidden exchange rate
+    between milliseconds and tokens per second, because no such rate exists.
+    """
+    if m.ttft_ms and m.ttft_ms <= TTFT_BUDGET_MS:
+        return 1e6 + m.decode_tps          # meets budget: rank on decode alone
+    return -_safe(m.ttft_ms)               # misses budget: least-bad first
+
+
 INTERACTIVE = Objective(
     name="interactive",
     description=(
-        "Chat / assistant workloads. Weights decode throughput heavily, since "
-        "that is the streaming speed a user perceives, with a modest pull "
-        "toward low TTFT so responses start promptly."
+        f"Chat / assistant workloads. Maximises decode throughput subject to a "
+        f"time-to-first-token budget of {TTFT_BUDGET_MS:.0f} ms, rather than "
+        f"trading the two off against each other at an arbitrary exchange rate."
     ),
-    score=lambda m: m.decode_tps * (1.0 + 0.15 * (1000.0 / _safe(m.ttft_ms))),
+    score=_interactive,
 )
 
 BATCH = Objective(
@@ -65,6 +100,40 @@ BALANCED = Objective(
     ),
     score=lambda m: 2.0 / (1.0 / _safe(m.prefill_tps) + 1.0 / _safe(m.decode_tps)),
 )
+
+
+# Published on-demand USD/hour, us-west-2, at time of measurement. Used only to
+# express throughput per unit cost; override with --price-per-hour for your own
+# region, instance size, or negotiated/spot rate.
+DEFAULT_PRICE_PER_HOUR = {
+    "c8g.4xlarge": 0.72666,
+    "c7g.4xlarge": 0.58,
+    "c6g.4xlarge": 0.544,
+}
+
+
+def cost_objective(price_per_hour: float) -> Objective:
+    """Tokens per dollar.
+
+    On Arm the interesting question is usually not "which box is fastest" but
+    "which box does the work for less". A config that gives up 8% throughput on
+    hardware costing 25% less wins on the invoice every month, and that is the
+    comparison an infrastructure owner actually makes.
+
+    Rate is a caller-supplied price because there is no correct universal
+    number: region, instance size, spot vs on-demand, and committed-use
+    discounts all move it. Passing it in keeps the arithmetic honest rather
+    than baking a stale list price into a score.
+    """
+    return Objective(
+        name="cost",
+        description=(
+            f"Decode tokens per US dollar at ${price_per_hour:.4f}/hour. "
+            f"Optimises throughput per unit spend rather than raw speed."
+        ),
+        # tok/s * 3600 s/hr / ($/hr) = tokens per dollar
+        score=lambda m: (m.decode_tps * 3600.0) / _safe(price_per_hour),
+    )
 
 
 # ---------------------------------------------------------------------------

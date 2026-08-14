@@ -12,7 +12,8 @@ import sys
 from pathlib import Path
 
 from .report import markdown_report, tuned_config, write_results
-from .score import DEFAULT_OBJECTIVE, OBJECTIVES, baseline, best
+from .score import (DEFAULT_OBJECTIVE, DEFAULT_PRICE_PER_HOUR, OBJECTIVES,
+                    baseline, best, cost_objective)
 from .sweep import SweepRunner, build_grid, detect_target
 
 import json
@@ -60,7 +61,17 @@ def cmd_tune(args: argparse.Namespace) -> int:
         print("error: could not determine core count", file=sys.stderr)
         return 2
 
-    objective = OBJECTIVES[args.objective]
+    if args.objective == "cost":
+        price = args.price_per_hour or DEFAULT_PRICE_PER_HOUR.get(
+            target.instance_type, 0.0)
+        if not price:
+            print("error: --price-per-hour required (unknown instance type "
+                  f"{target.instance_type!r}); there is no correct default.",
+                  file=sys.stderr)
+            return 2
+        objective = cost_objective(price)
+    else:
+        objective = OBJECTIVES[args.objective]
     grid = build_grid(models, target.cores, quick=args.quick)
 
     # flush=True throughout: a sweep is long-running and usually redirected to a
@@ -125,8 +136,11 @@ def main(argv: list[str] | None = None) -> int:
     t.add_argument("--bench", required=True, help="path to llama-bench")
     t.add_argument("--models", required=True, nargs="+",
                    help="GGUF model(s); the first is the primary")
-    t.add_argument("--objective", default=DEFAULT_OBJECTIVE, choices=sorted(OBJECTIVES),
+    t.add_argument("--objective", default=DEFAULT_OBJECTIVE,
+                   choices=sorted(set(OBJECTIVES) | {"cost"}),
                    help="what to optimise for")
+    t.add_argument("--price-per-hour", type=float, default=None,
+                   help="USD/hour for the `cost` objective (region/spot specific)")
     t.add_argument("--outdir", default="results")
     t.add_argument("--prompt-tokens", type=int, default=512)
     t.add_argument("--gen-tokens", type=int, default=128)
