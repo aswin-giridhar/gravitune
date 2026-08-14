@@ -15,3 +15,8 @@ __pycache__/
 
 # NOTE: results/*.json is deliberately NOT ignored -- the sweep JSON and tuned
 # configs are the published evidence, not transient build output.
+
+# --- submission / working prep: local only, not part of the project ---
+docs/DEVPOST-SUBMISSION.md
+docs/UPSTREAM-ISSUE-DRAFT.md
+docs/ship-check.html
